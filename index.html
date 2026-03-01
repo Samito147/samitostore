@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Oferta verificada • Redirecionando para o Mercado Livre</title>
+  <meta name="description" content="Página de curadoria com redirecionamento seguro para compra no Mercado Livre." />
+  <meta name="robots" content="noindex, nofollow" />
+
+  <!-- ✅ Open Graph básico -->
+  <meta property="og:title" content="Oferta verificada no Mercado Livre" />
+  <meta property="og:description" content="Você será redirecionado(a) para o Mercado Livre para concluir a compra com segurança." />
+  <meta property="og:type" content="website" />
+
+  <link rel="preconnect" href="https://connect.facebook.net" crossorigin />
+  <link rel="stylesheet" href="css/styles.css" />
+
+  <!-- ✅ META PIXEL (BASE) -->
+  <script>
+    !function(f,b,e,v,n,t,s){
+      if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+      n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+      n.queue=[];t=b.createElement(e);t.async=!0;
+      t.src=v;s=b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t,s)
+    }(window, document,'script','https://connect.facebook.net/en_US/fbevents.js');
+  </script>
+</head>
+
+<body>
+  <main class="wrap">
+    <header class="topbar">
+      <div class="brand">
+        <img
+          class="brand-logo"
+          src="ASSETS/IMG/LOGO.PNG"
+          alt="SAMITO STORE"
+          loading="eager"
+          decoding="async"
+        />
+
+        <div class="brand-text">
+          <strong id="brandName">SAMITO STORE</strong>
+          <span id="brandTag">Ofertas com redirecionamento seguro</span>
+        </div>
+      </div>
+
+      <!-- 🔄 SUBSTITUÍDO: Redes sociais (imagens oficiais coloridas) -->
+      <div class="trust social-links">
+
+        <!-- Instagram -->
+        <a
+          href="https://instagram.com/samitostoreoficial"
+          target="_blank"
+          rel="noopener"
+          aria-label="Instagram"
+          title="Instagram"
+        >
+          <img
+            src="ASSETS/IMG/instagram.png"
+            alt="Instagram"
+            width="24"
+            height="24"
+            loading="eager"
+            decoding="async"
+            style="display:block"
+          />
+        </a>
+
+        <!-- Facebook -->
+        <a
+          href="https://www.facebook.com/profile.php?id=61588348773470"
+          target="_blank"
+          rel="noopener"
+          aria-label="Facebook"
+          title="Facebook"
+        >
+          <img
+            src="ASSETS/IMG/facebook.png"
+            alt="Facebook"
+            width="24"
+            height="24"
+            loading="eager"
+            decoding="async"
+            style="display:block"
+          />
+        </a>
+
+        <!-- TikTok -->
+        <a
+          href="https://www.tiktok.com/@samitostoreoficial"
+          target="_blank"
+          rel="noopener"
+          aria-label="TikTok"
+          title="TikTok"
+        >
+          <img
+            src="ASSETS/IMG/tiktok.png"
+            alt="TikTok"
+            width="24"
+            height="24"
+            loading="eager"
+            decoding="async"
+            style="display:block"
+          />
+        </a>
+
+      </div>
+    </header>
+
+    <section class="card">
+      <div class="card-head">
+        <h1 id="productTitle">Carregando oferta…</h1>
+        <p class="subtitle" id="productSubtitle">
+          Preparando detalhes antes do redirecionamento.
+        </p>
+      </div>
+
+      <div class="card-body">
+        <div class="product">
+          <div class="product-media" aria-hidden="false">
+            <div class="media-skeleton" id="mediaSkeleton"></div>
+            <img id="mainImage" class="main-image" alt="" loading="eager" decoding="async" />
+            <div class="thumbs" id="thumbs"></div>
+          </div>
+
+          <div class="product-info">
+            <div class="meta-row">
+              <span class="pill" id="categoryPill">Categoria</span>
+              <span class="dot-sep">•</span>
+              <span class="muted" id="sourcePill">Origem: Anúncio</span>
+            </div>
+
+            <div class="price-row">
+              <div class="price">
+                <span class="price-label">Preço</span>
+
+                <!-- ✅ NOVO: Bloco estilo Mercado Livre (Oferta Relâmpago) -->
+                <!-- Regras:
+                     - Preço atual (priceValue) = 47% do preço anterior
+                     - Desconto = 53% OFF
+                     - oldPriceValue e promoEndsIn serão preenchidos/ajustados via JS depois -->
+                <div class="ml-promo" id="promoBox" aria-label="Oferta relâmpago">
+                  <div class="ml-promo-top">
+                    <span class="ml-promo-tag">OFERTA RELÂMPAGO</span>
+                    <span class="ml-promo-end">
+                      Encerra em <span id="promoEndsIn">—</span>
+                    </span>
+                  </div>
+
+                  <div class="ml-promo-bottom">
+                    <span class="ml-old-price" id="oldPriceValue">—</span>
+                    <span class="ml-discount" id="discountValue">53% OFF</span>
+                  </div>
+                </div>
+                <!-- ✅ FIM do bloco ML -->
+
+                <span class="price-value" id="priceValue">—</span>
+                <span class="price-sub" id="priceSub">Preço exibido no Mercado Livre</span>
+              </div>
+
+              <div class="rating">
+                <span class="rating-label">Confiança</span>
+                <span class="rating-value" id="trustValue">Alta</span>
+                <span class="rating-sub" id="trustSub">Compra no Mercado Livre</span>
+              </div>
+            </div>
+
+            <div class="chips" id="chips"></div>
+
+            <ul class="bullets" id="bullets">
+              <li>Você concluirá a compra dentro do Mercado Livre.</li>
+              <li>Este site apenas direciona para a oferta.</li>
+              <li>Redirecionamento rápido e seguro.</li>
+            </ul>
+
+            <div class="desc" id="descBox">
+              <div class="desc-head">
+                <span class="desc-title">Descrição</span>
+                <span class="desc-note muted" id="descNote">Resumo do anúncio</span>
+              </div>
+              <p class="desc-text" id="descText">—</p>
+            </div>
+
+            <div class="cta-row">
+              <button id="goMlBtn" class="btn btn-primary" type="button">
+                Ver no Mercado Livre
+                <span class="btn-icon">↗</span>
+              </button>
+
+              <button id="copyLinkBtn" class="btn btn-ghost" type="button">
+                Copiar link
+              </button>
+            </div>
+
+            <p class="fineprint" id="fineprint">
+              Se não redirecionar automaticamente, clique em “Ver no Mercado Livre”.
+            </p>
+
+            <div class="timer" id="timerBox">
+              <span class="timer-label">Redirecionando em</span>
+              <span class="timer-value" id="countdown">—</span>
+              <span class="timer-label">segundos…</span>
+            </div>
+
+            <div class="error" id="errorBox"></div>
+          </div>
+        </div>
+      </div>
+
+      <footer class="card-foot">
+        <div class="foot-left">
+          <span class="mini">🔎 Curadoria</span>
+          <span class="mini muted">•</span>
+          <span class="mini muted" id="footCategory">—</span>
+        </div>
+
+        <div class="foot-right">
+          <span class="mini muted" id="footUtm">UTM: —</span>
+        </div>
+      </footer>
+    </section>
+
+    <section class="notes">
+      <h2 class="notes-title">Transparência</h2>
+      <p class="notes-text">
+        Esta página não processa pagamentos. Ao clicar, você será direcionado(a) ao Mercado Livre para finalizar a compra.
+      </p>
+    </section>
+
+    <footer class="page-footer">
+      <p class="footer-text">© <span id="year"></span> Curadoria • Redirecionamento seguro</p>
+    </footer>
+  </main>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
