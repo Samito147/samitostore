@@ -1,21 +1,22 @@
 // /api/oauth/start.js
-// ✅ Inicia o OAuth do Mercado Livre (redireciona para a tela de autorização)
+// ✅ Inicia OAuth do Mercado Livre (redirect_uri fixo via ML_REDIRECT_URI)
 
 module.exports = async (req, res) => {
   try {
     const clientId = process.env.ML_CLIENT_ID;
+    const redirectUri = process.env.ML_REDIRECT_URI;
 
     if (!clientId) {
       return res.status(500).send("ERRO: ML_CLIENT_ID não configurado nas Environment Variables.");
     }
 
-    // ✅ Usamos o redirect configurado no Developers (recomendado setar também no env)
-    // Ex: https://samitostore.vercel.app/api/oauth/callback
-    const redirectUri =
-      process.env.ML_REDIRECT_URI ||
-      `${req.headers["x-forwarded-proto"] || "https"}://${req.headers.host}/api/oauth/callback`;
+    if (!redirectUri) {
+      return res.status(500).send(
+        "ERRO: ML_REDIRECT_URI não configurado. Use exatamente: https://samitostore.vercel.app/api/oauth/callback"
+      );
+    }
 
-    // ✅ state simples para evitar callback aleatório
+    // ✅ state simples
     const state = `st_${Date.now()}_${Math.random().toString(16).slice(2)}`;
 
     const authUrl = new URL("https://auth.mercadolivre.com.br/authorization");
@@ -24,7 +25,6 @@ module.exports = async (req, res) => {
     authUrl.searchParams.set("redirect_uri", redirectUri);
     authUrl.searchParams.set("state", state);
 
-    // ✅ Redireciona para a autorização do ML
     res.statusCode = 302;
     res.setHeader("Location", authUrl.toString());
     res.end();
