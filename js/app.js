@@ -31,7 +31,7 @@
      - Em DEV (localhost): usa proxy remoto da Vercel
      ✅ Isso evita o 403/bloqueio local e evita CORS no front
      ========================================================= */
-  const VERCEL_PROXY_BASE = "https://SEU-PROJETO.vercel.app"; // <- TROQUE AQUI
+  const VERCEL_PROXY_BASE = "https://samitostore.vercel.app"; // <- TROQUE AQUI se mudar domínio
 
   const ML_PROXY_ENDPOINT =
     (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
@@ -194,11 +194,7 @@
      ----------------------------- */
   function computeOldPriceFromCurrent(currentPrice) {
     if (!Number.isFinite(currentPrice) || currentPrice <= 0) return null;
-
-    // ✅ preço anterior = preço atual / 0.47
     const old = currentPrice / PROMO_PRICE_RATIO;
-
-    // ✅ arredondamento para ficar com cara de preço real (2 casas)
     return Math.round(old * 100) / 100;
   }
 
@@ -482,7 +478,7 @@
 
     if (mlItemId) {
       try {
-        // ✅ PROXY SEMPRE primeiro (agora resolve DEV local via Vercel)
+        // ✅ PROXY SEMPRE primeiro
         let data;
         try {
           data = await fetchFromProxy(mlItemId);
