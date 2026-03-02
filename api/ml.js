@@ -1,6 +1,6 @@
-export default async function handler(req, res) {
+module.exports = async (req, res) => {
   try {
-    // ✅ CORS básico para permitir chamada do seu GitHub Pages
+    // ✅ CORS básico
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Access-Control-Allow-Methods", "GET,OPTIONS");
     res.setHeader("Access-Control-Allow-Headers", "Content-Type");
@@ -22,6 +22,7 @@ export default async function handler(req, res) {
     const itemUrl = `https://api.mercadolibre.com/items/${encodeURIComponent(item)}`;
     const descUrl = `https://api.mercadolibre.com/items/${encodeURIComponent(item)}/description`;
 
+    // ✅ Node no Vercel tem fetch (Node 18+). Se algum dia não tiver, aí sim precisamos ajustar.
     const [itemRes, descRes] = await Promise.all([
       fetch(itemUrl, { headers: { "User-Agent": "Mozilla/5.0" } }),
       fetch(descUrl, { headers: { "User-Agent": "Mozilla/5.0" } }).catch(() => null)
@@ -74,4 +75,4 @@ export default async function handler(req, res) {
       detail: String(err?.message || err)
     });
   }
-}
+};
