@@ -5,9 +5,7 @@ module.exports = async (req, res) => {
     res.setHeader("Access-Control-Allow-Methods", "GET,OPTIONS");
     res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
-    if (req.method === "OPTIONS") {
-      return res.status(204).end();
-    }
+    if (req.method === "OPTIONS") return res.status(204).end();
 
     const itemRaw = String(req.query.item || "").trim().toUpperCase();
     const item = itemRaw.replace("-", "");
@@ -22,25 +20,51 @@ module.exports = async (req, res) => {
     const itemUrl = `https://api.mercadolibre.com/items/${encodeURIComponent(item)}`;
     const descUrl = `https://api.mercadolibre.com/items/${encodeURIComponent(item)}/description`;
 
-    // ✅ Node no Vercel tem fetch (Node 18+). Se algum dia não tiver, aí sim precisamos ajustar.
-    const [itemRes, descRes] = await Promise.all([
-      fetch(itemUrl, { headers: { "User-Agent": "Mozilla/5.0" } }),
-      fetch(descUrl, { headers: { "User-Agent": "Mozilla/5.0" } }).catch(() => null)
-    ]);
+    // ✅ Headers mais completos (evitam bloqueios/antibot em alguns cenários)
+    const headers = {
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36",
+      "Accept": "application/json, text/plain, */*",
+      "Accept-Language": "pt-BR,pt;q=0.9,en;q=0.8",
+      "Referer": "https://www.mercadolivre.com.br/",
+      "Origin": "https://www.mercadolivre.com.br/"
+    };
 
-    if (!itemRes.ok) {
-      return res.status(502).json({ ok: false, error: `ML item API HTTP ${itemRes.status}` });
+    // ✅ Timeout (pra não ficar pendurado e virar 502 do Vercel)
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 9000);
+
+    const safeReadText = async (resp) => {
+      try { return await resp.text(); } catch { return ""; }
+    };
+
+    const [itemRes, descRes] = await Promise.all([
+      fetch(itemUrl, { headers, signal: controller.signal }),
+      fetch(descUrl, { headers, signal: controller.signal }).catch(() => null)
+    ]).finally(() => clearTimeout(timeout));
+
+    // ❗ Se o ML respondeu erro, devolve o erro DE VERDADE (com status + trecho do body)
+    if (!itemRes || !itemRes.ok) {
+      const status = itemRes ? itemRes.status : 0;
+      const body = itemRes ? await safeReadText(itemRes) : "";
+      return res.status(502).json({
+        ok: false,
+        error: "Falha ao buscar item no Mercado Livre",
+        upstream_status: status,
+        upstream_body_snippet: body.slice(0, 300) // ✅ só um pedacinho
+      });
     }
 
     const itemJson = await itemRes.json();
-    const descJson = descRes && descRes.ok ? await descRes.json() : { plain_text: "" };
 
-    // ✅ Imagens
+    let descJson = { plain_text: "" };
+    if (descRes && descRes.ok) {
+      try { descJson = await descRes.json(); } catch { descJson = { plain_text: "" }; }
+    }
+
     const pictures = Array.isArray(itemJson?.pictures)
       ? itemJson.pictures.map(p => p?.secure_url || p?.url).filter(Boolean)
       : [];
 
-    // ✅ Tamanhos (quando houver)
     const sizesSet = new Set();
     if (Array.isArray(itemJson?.variations)) {
       for (const v of itemJson.variations) {
@@ -69,10 +93,13 @@ module.exports = async (req, res) => {
       permalink: itemJson?.permalink || ""
     });
   } catch (err) {
+    const msg = String(err?.message || err);
+    const isAbort = msg.toLowerCase().includes("aborted") || msg.toLowerCase().includes("abort");
+
     return res.status(500).json({
       ok: false,
-      error: "Erro interno no proxy",
-      detail: String(err?.message || err)
+      error: isAbort ? "Timeout ao consultar Mercado Livre" : "Erro interno no proxy",
+      detail: msg
     });
   }
 };
