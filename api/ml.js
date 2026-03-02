@@ -1,7 +1,7 @@
 // /api/ml.js
 // ✅ Proxy do Mercado Livre usando OAuth (refresh token -> access token)
-// ✅ Retorna dados do item para o front sem CORS
-// ✅ Se der erro, devolve upstream_status + snippet para diagnóstico (sem mistério)
+// ✅ Sanitização robusta do parâmetro item (aceita MLB-xxxx, espaços etc)
+// ✅ Retorna diagnóstico quando upstream falha
 
 module.exports = async (req, res) => {
   try {
@@ -28,11 +28,26 @@ module.exports = async (req, res) => {
       });
     }
 
-    const itemRaw = String(req.query.item || "").trim().toUpperCase();
-    const item = itemRaw.replace("-", "");
+    // =========================================================
+    // ✅ SANITIZAÇÃO DO ITEM
+    // - remove espaços
+    // - remove caracteres não-alfanuméricos
+    // - força uppercase
+    // - aceita MLB-123 / mlb123 / " MLB 123 "
+    // =========================================================
+    const raw = String(req.query.item || "");
+    const item = raw
+      .trim()
+      .toUpperCase()
+      .replace(/[^A-Z0-9]/g, ""); // remove tudo que não for letra/número
 
-    if (!item || !/^MLB\\d+$/.test(item)) {
-      return res.status(400).json({ ok: false, error: "Parâmetro 'item' inválido. Ex: MLB5022231220" });
+    if (!/^MLB\d+$/.test(item)) {
+      return res.status(400).json({
+        ok: false,
+        error: "Parâmetro 'item' inválido. Ex: MLB5022231220",
+        received: raw,
+        normalized: item
+      });
     }
 
     // ✅ 1) Refresh: pega access_token novo
@@ -111,12 +126,10 @@ module.exports = async (req, res) => {
       try { descJson = await descRes.json(); } catch { descJson = { plain_text: "" }; }
     }
 
-    // ✅ Imagens
     const pictures = Array.isArray(itemJson?.pictures)
       ? itemJson.pictures.map(p => p?.secure_url || p?.url).filter(Boolean)
       : [];
 
-    // ✅ Tamanhos (quando houver)
     const sizesSet = new Set();
     if (Array.isArray(itemJson?.variations)) {
       for (const v of itemJson.variations) {
