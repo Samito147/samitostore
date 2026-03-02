@@ -1,56 +1,106 @@
+// /api/ml.js
+// ✅ Proxy do Mercado Livre usando OAuth (refresh token -> access token)
+// ✅ Retorna dados do item para o front sem CORS
+// ✅ Se der erro, devolve upstream_status + snippet para diagnóstico (sem mistério)
+
 module.exports = async (req, res) => {
   try {
     // ✅ CORS básico
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Access-Control-Allow-Methods", "GET,OPTIONS");
     res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+    res.setHeader("Cache-Control", "no-store");
 
     if (req.method === "OPTIONS") return res.status(204).end();
+
+    const clientId = process.env.ML_CLIENT_ID;
+    const clientSecret = process.env.ML_CLIENT_SECRET;
+    const refreshToken = process.env.ML_REFRESH_TOKEN;
+
+    if (!clientId || !clientSecret) {
+      return res.status(500).json({ ok: false, error: "ML_CLIENT_ID/ML_CLIENT_SECRET ausentes no Vercel." });
+    }
+
+    if (!refreshToken) {
+      return res.status(500).json({
+        ok: false,
+        error: "ML_REFRESH_TOKEN ausente. Rode /api/oauth/start, autorize e salve o refresh token no Vercel."
+      });
+    }
 
     const itemRaw = String(req.query.item || "").trim().toUpperCase();
     const item = itemRaw.replace("-", "");
 
-    if (!item || !/^MLB\d+$/.test(item)) {
-      return res.status(400).json({
+    if (!item || !/^MLB\\d+$/.test(item)) {
+      return res.status(400).json({ ok: false, error: "Parâmetro 'item' inválido. Ex: MLB5022231220" });
+    }
+
+    // ✅ 1) Refresh: pega access_token novo
+    const tokenUrl = "https://api.mercadolibre.com/oauth/token";
+    const body = new URLSearchParams();
+    body.set("grant_type", "refresh_token");
+    body.set("client_id", clientId);
+    body.set("client_secret", clientSecret);
+    body.set("refresh_token", refreshToken);
+
+    const tokenRes = await fetch(tokenUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: body.toString()
+    });
+
+    const tokenText = await tokenRes.text();
+    let tokenJson = null;
+    try { tokenJson = JSON.parse(tokenText); } catch {}
+
+    if (!tokenRes.ok) {
+      return res.status(502).json({
         ok: false,
-        error: "Parâmetro 'item' inválido. Ex: MLB5022231220"
+        error: "Falha ao renovar access_token via refresh_token",
+        upstream_status: tokenRes.status,
+        upstream_body_snippet: String(tokenText || "").slice(0, 300)
       });
     }
 
+    const accessToken = tokenJson?.access_token;
+    if (!accessToken) {
+      return res.status(502).json({
+        ok: false,
+        error: "Refresh OK mas access_token não veio na resposta",
+        upstream_body_snippet: String(tokenText || "").slice(0, 300)
+      });
+    }
+
+    // ✅ 2) Busca item + descrição com Bearer token
     const itemUrl = `https://api.mercadolibre.com/items/${encodeURIComponent(item)}`;
     const descUrl = `https://api.mercadolibre.com/items/${encodeURIComponent(item)}/description`;
 
-    // ✅ Headers mais completos (evitam bloqueios/antibot em alguns cenários)
     const headers = {
-      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36",
+      "Authorization": `Bearer ${accessToken}`,
       "Accept": "application/json, text/plain, */*",
-      "Accept-Language": "pt-BR,pt;q=0.9,en;q=0.8",
-      "Referer": "https://www.mercadolivre.com.br/",
-      "Origin": "https://www.mercadolivre.com.br/"
+      "User-Agent": "Mozilla/5.0"
     };
-
-    // ✅ Timeout (pra não ficar pendurado e virar 502 do Vercel)
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 9000);
 
     const safeReadText = async (resp) => {
       try { return await resp.text(); } catch { return ""; }
     };
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 9000);
 
     const [itemRes, descRes] = await Promise.all([
       fetch(itemUrl, { headers, signal: controller.signal }),
       fetch(descUrl, { headers, signal: controller.signal }).catch(() => null)
     ]).finally(() => clearTimeout(timeout));
 
-    // ❗ Se o ML respondeu erro, devolve o erro DE VERDADE (com status + trecho do body)
     if (!itemRes || !itemRes.ok) {
       const status = itemRes ? itemRes.status : 0;
-      const body = itemRes ? await safeReadText(itemRes) : "";
+      const bodySnippet = itemRes ? (await safeReadText(itemRes)).slice(0, 300) : "";
       return res.status(502).json({
         ok: false,
-        error: "Falha ao buscar item no Mercado Livre",
+        error: "Falha ao buscar item no Mercado Livre (autenticado)",
         upstream_status: status,
-        upstream_body_snippet: body.slice(0, 300) // ✅ só um pedacinho
+        upstream_body_snippet: bodySnippet
       });
     }
 
@@ -61,10 +111,12 @@ module.exports = async (req, res) => {
       try { descJson = await descRes.json(); } catch { descJson = { plain_text: "" }; }
     }
 
+    // ✅ Imagens
     const pictures = Array.isArray(itemJson?.pictures)
       ? itemJson.pictures.map(p => p?.secure_url || p?.url).filter(Boolean)
       : [];
 
+    // ✅ Tamanhos (quando houver)
     const sizesSet = new Set();
     if (Array.isArray(itemJson?.variations)) {
       for (const v of itemJson.variations) {
