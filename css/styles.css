@@ -45,12 +45,12 @@ body {
 
 /* ✅ LOGO (NOVO) - controla tamanho e enquadramento */
 .brand-logo{
-  width: 40px;              /* tamanho ideal tipo marketplace */
-  height: 40px;             /* trava altura pra não estourar */
-  object-fit: contain;      /* mantém proporção (sem cortar) */
-  flex: 0 0 40px;           /* impede o flex de esticar */
-  border-radius: 10px;      /* cantinhos suaves */
-  background: transparent;  /* sem bloco branco adicional */
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  flex: 0 0 40px;
+  border-radius: 10px;
+  background: transparent;
   display: block;
 }
 
@@ -87,44 +87,108 @@ body {
 }
 
 /* =========================================================
-   ✅ NOVO (CIRÚRGICO): espaçamento elegante dos ícones sociais
+   ✅ PATCH CIRÚRGICO: ocultar ícones + botão "Ir a loja" azul premium
    - Não mexe no HTML
-   - Usa gap + área de clique confortável
+   - Esconde os ícones de redes (por enquanto)
+   - Deixa o botão elegante em tons azuis (estilo ML)
    ========================================================= */
-.social-links {
-  /* Mantém o comportamento do .trust e adiciona espaçamento */
-  gap: 10px;                 /* ✅ espaçamento elegante entre ícones */
+
+/* ✅ 1) Some com os ícones de redes sociais (até você querer voltar) */
+.social-links{
+  display: none !important;
 }
 
+/* ✅ 2) Botão “Ir a loja” com cara de botão principal, mas compacto para topbar */
+.topbar .trust .btn.btn-ghost{
+  width: auto;                       /* não estica no header */
+  padding: 10px 12px;
+  border-radius: 12px;
+
+  /* Azul elegante (mesma família do primary) */
+  background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%);
+  color: #ffffff;
+
+  border: 1px solid rgba(37, 99, 235, 0.35);
+
+  box-shadow:
+    0 10px 18px rgba(37, 99, 235, 0.18),
+    0 1px 0 rgba(17, 24, 39, 0.03);
+
+  font-weight: 950;
+  letter-spacing: 0.1px;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  text-decoration: none;             /* garante cara de botão mesmo sendo <a> */
+  transition: transform 120ms ease, filter 120ms ease, box-shadow 120ms ease;
+}
+
+.topbar .trust .btn.btn-ghost:hover{
+  filter: brightness(1.05);
+  box-shadow:
+    0 14px 26px rgba(37, 99, 235, 0.22),
+    0 1px 0 rgba(17, 24, 39, 0.03);
+  transform: translateY(-1px);
+}
+
+.topbar .trust .btn.btn-ghost:active{
+  transform: translateY(0px);
+}
+
+/* ✅ Ícone ↗ um pouco mais “firme” */
+.topbar .trust .btn.btn-ghost .btn-icon{
+  margin-left: 0;
+  font-weight: 1000;
+  opacity: 0.95;
+}
+
+/* ✅ Mobile: botão ocupa largura inteira do topo (fica lindo e usável) */
+@media (max-width: 760px){
+  .topbar .trust{
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .topbar .trust .btn.btn-ghost{
+    width: 100%;
+    justify-content: center;
+  }
+}
+/* ========================================================= */
+
+/* =========================================================
+   ✅ NOVO (CIRÚRGICO): espaçamento elegante dos ícones sociais
+   ========================================================= */
+.social-links { gap: 10px; }
+
 .social-links a {
-  /* ✅ Área de clique maior (sem aumentar visualmente demais) */
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 6px;              /* “margem interna” vira o espaçamento visual */
-  border-radius: 10px;       /* cantinhos suaves */
+  padding: 6px;
+  border-radius: 10px;
   text-decoration: none;
-  line-height: 0;            /* evita micro espaços em inline elements */
+  line-height: 0;
   border: 1px solid transparent;
   transition: transform 120ms ease, background 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
 }
 
 .social-links a:hover {
-  background: #f9fafb;       /* hover leve, cara de marketplace */
+  background: #f9fafb;
   border-color: #e5e7eb;
   box-shadow: 0 8px 16px rgba(17, 24, 39, 0.06);
   transform: translateY(-1px);
 }
 
-.social-links a:active {
-  transform: translateY(0px);
-}
+.social-links a:active { transform: translateY(0px); }
 
 .social-links img {
-  display: block;            /* remove espaços estranhos */
+  display: block;
   width: 24px;
   height: 24px;
-  object-fit: contain;       /* garante proporção */
+  object-fit: contain;
 }
 /* ========================================================= */
 
@@ -169,24 +233,33 @@ body {
   font-size: 13px;
 }
 
-.card-body {
-  padding: 18px;
-}
+.card-body { padding: 18px; }
 
 /* ---------- Produto: layout principal (como ML) ---------- */
 .product {
   display: grid;
   grid-template-columns: minmax(520px, 1fr) 360px;
+
+  /* ✅ NOVO: 2 linhas (media em cima, desc embaixo) */
+  grid-template-rows: auto auto;
+
   gap: 18px;
   align-items: start;
 }
 
 /* ---------- Área de media (thumbs + imagem grande) ---------- */
 .product-media {
+  grid-column: 1 / 2;
+  grid-row: 1 / 2;
+
   position: relative;
   display: grid;
+
+  /* ✅ thumbs na esquerda + imagem principal na direita */
   grid-template-columns: 72px 1fr;
+  grid-template-areas: "thumbs main";
   gap: 14px;
+
   align-items: start;
   padding: 10px;
   border: 1px solid #eef2f7;
@@ -211,8 +284,9 @@ body {
   100% { background-position: 0 0; }
 }
 
-/* Imagem principal no "centro" */
+/* Imagem principal */
 .main-image {
+  grid-area: main;
   width: 100%;
   height: 440px;
   object-fit: contain;
@@ -222,8 +296,9 @@ body {
   z-index: 1;
 }
 
-/* Thumbs como coluna à esquerda */
+/* Thumbs */
 .thumbs {
+  grid-area: thumbs;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -262,6 +337,11 @@ body {
 
 /* ---------- Área de info (lado direito) ---------- */
 .product-info {
+  grid-column: 2 / 3;
+
+  /* ✅ NOVO: ocupa as duas linhas da direita */
+  grid-row: 1 / 3;
+
   padding: 14px 14px 16px;
   border: 1px solid #eef2f7;
   border-radius: 12px;
@@ -297,16 +377,24 @@ body {
   font-size: 12px;
 }
 
-/* Preço + confiança em linhas separadas como marketplace */
+/* =========================================================
+   ✅ PREÇO + CONFIANÇA (UPGRADE PREMIUM)
+   ========================================================= */
 .price-row {
   display: grid;
   grid-template-columns: 1fr;
   gap: 12px;
   margin: 12px 0 10px;
-  padding: 12px;
-  border: 1px solid #eef2f7;
-  border-radius: 12px;
-  background: #fbfdff;
+
+  padding: 14px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 14px;
+
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+
+  box-shadow:
+    0 10px 22px rgba(17, 24, 39, 0.06),
+    0 1px 0 rgba(17, 24, 39, 0.03);
 }
 
 .price-label,
@@ -318,16 +406,22 @@ body {
 }
 
 /* =========================================================
-   ✅ NOVO: BLOCO "OFERTA RELÂMPAGO" estilo Mercado Livre
-   - Igual ao print (amarelo, faixa, antigo riscado, %OFF)
-   - Só estiliza as classes já usadas no HTML
+   ✅ BLOCO "OFERTA RELÂMPAGO" (MAIS DESTAQUE + TIMER MENOR)
+   - Mais destaque no texto OFERTA RELÂMPAGO
+   - Mais destaque no desconto
+   - Relógio mais compacto, números mais próximos (ML-like)
    ========================================================= */
 .ml-promo {
-  margin: 6px 0 10px;                 /* respiro entre label e preço */
-  border-radius: 6px;                 /* cantos discretos como ML */
+  margin: 6px 0 10px;
+  border-radius: 10px;
   overflow: hidden;
-  background: #fff2c6;                /* amarelo suave (base) */
-  border: 1px solid #ffe08a;          /* borda amarela leve */
+
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 1px 0 rgba(17, 24, 39, 0.03);
+  background: #ffffff;
+
+  width: 100%;
+  min-width: 0;
 }
 
 .ml-promo-top {
@@ -335,81 +429,144 @@ body {
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  padding: 6px 8px;
-  background: #ffe600;                /* amarelo forte (faixa) */
+
+  padding: 8px 10px;
+
+  /* ✅ LARANJA SUAVE (ML-like) */
+  background: linear-gradient(180deg, #ffb22c 0%, #ff8a00 100%);
+
+  border-bottom: 1px solid rgba(15, 23, 42, 0.12);
+
+  width: 100%;
+  min-width: 0;
 }
 
+/* ✅ CENTRALIZA O TÍTULO "OFERTA RELÂMPAGO" NO TOPO DA PROMO */
 .ml-promo-tag {
   display: inline-flex;
   align-items: center;
-  font-size: 11px;
-  font-weight: 900;
-  letter-spacing: 0.2px;
+  justify-content: center;   /* ✅ centraliza o conteúdo */
+  width: 100%;               /* ✅ ocupa a faixa toda */
+  text-align: center;        /* ✅ garante centralização do texto */
+  
+  font-size: 12px;
+  font-weight: 1000;
+  letter-spacing: 0.55px;
   color: #111827;
   text-transform: uppercase;
+
+  padding: 4px 8px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.35);
+  border: 1px solid rgba(17, 24, 39, 0.14);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.35);
+  text-shadow: 0 1px 0 rgba(255,255,255,0.45);
+
+  flex: 0 0 auto;            /* ✅ remove “empurrão” lateral */
+  min-width: 0;              /* ✅ evita overflow */
+}
+
+/* (mantém o ícone) */
+.ml-promo-tag::before{
+  content: "⚡";
+  display: inline-flex;
+  margin-right: 6px;
+  transform: translateY(-0.5px);
 }
 
 .ml-promo-end {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+
+  /* ✅ mais “tight” */
+  gap: 5px;
+
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 900;
   color: #111827;
   white-space: nowrap;
+
+  flex: 0 0 auto;
+  min-width: 0;
 }
 
-/* O contador (01:46:16) com cara de “caixinhas” */
+/* ✅ o container do timer não pode “estourar” */
 #promoEndsIn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 2px 6px;
-  border-radius: 4px;
-  background: rgba(255, 255, 255, 0.75);
-  border: 1px solid rgba(17, 24, 39, 0.10);
-  font-variant-numeric: tabular-nums;
-  font-feature-settings: "tnum";
-  font-weight: 900;
+  min-width: 0;
+  max-width: 100%;
 }
 
+/* Corpo (base clara, suave) */
 .ml-promo-bottom {
   display: flex;
   align-items: baseline;
   gap: 10px;
-  padding: 6px 8px;
-  background: #fff7da;               /* corpo mais claro */
+
+  padding: 10px 10px;
+  background: linear-gradient(180deg, #fff6e1 0%, #ffe7bf 100%);
+
+  width: 100%;
+  min-width: 0;
 }
 
 .ml-old-price {
   font-size: 12px;
-  color: #6b7280;
+  color: rgba(17, 24, 39, 0.55);
   text-decoration: line-through;
   text-decoration-thickness: 2px;
-  text-decoration-color: rgba(17, 24, 39, 0.35);
-  font-weight: 700;
+  text-decoration-color: rgba(17, 24, 39, 0.30);
+  font-weight: 800;
 }
 
 .ml-discount {
   display: inline-flex;
   align-items: center;
-  padding: 2px 6px;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 900;
+
+  /* ✅ MAIS DESTAQUE NO DESCONTO */
+  padding: 3px 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 1000;
+  letter-spacing: 0.2px;
+
   color: #111827;
-  background: #ffe600;               /* mesma faixa do topo */
-  border: 1px solid rgba(17, 24, 39, 0.10);
+
+  /* ✅ badge mais “premium” */
+  background: linear-gradient(180deg, rgba(255, 138, 0, 0.34), rgba(255, 138, 0, 0.22));
+  border: 1px solid rgba(17, 24, 39, 0.14);
+
+  box-shadow:
+    0 1px 0 rgba(17, 24, 39, 0.04),
+    inset 0 1px 0 rgba(255,255,255,0.45);
 }
 /* ========================================================= */
 
+/* =========================================================
+   ✅ PREÇO (MAIOR + MAIS “CARO” VISUALMENTE)
+   ========================================================= */
 .price-value {
   display: block;
-  font-size: 30px;
-  font-weight: 900;
-  letter-spacing: -0.6px;
-  color: #111827;
-  line-height: 1.05;
+
+  font-size: 40px;
+  font-weight: 950;
+  letter-spacing: -0.9px;
+
+  color: #0b1220;
+  line-height: 1.02;
+
+  text-shadow:
+    0 1px 0 rgba(255,255,255,0.9),
+    0 10px 22px rgba(2, 6, 23, 0.10);
+
+  animation: pricePulse 2.6s ease-in-out infinite;
+}
+
+@keyframes pricePulse {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-1px); }
 }
 
 .price-sub,
@@ -434,7 +591,7 @@ body {
   font-size: 10px;
 }
 
-/* Chips extras (tipo “frete”, “devolução”, etc) */
+/* Chips */
 .chips {
   display: flex;
   flex-wrap: wrap;
@@ -458,7 +615,7 @@ body {
   color: #166534;
 }
 
-/* Bullets: segurança/clareza */
+/* Bullets */
 .bullets {
   margin: 10px 0 12px;
   padding-left: 18px;
@@ -468,13 +625,17 @@ body {
 
 .bullets li { margin: 8px 0; }
 
-/* Descrição */
+/* =========================================================
+   ✅ DESCRIÇÃO AGORA ABAIXO DAS IMAGENS + "VEM MAIS"
+   ========================================================= */
 .desc {
+  grid-column: 1 / 2;
+  grid-row: 2 / 3;
+
   border: 1px solid #eef2f7;
   border-radius: 12px;
   padding: 12px;
   background: #ffffff;
-  margin-top: 10px;
 }
 
 .desc-head {
@@ -482,7 +643,7 @@ body {
   align-items: baseline;
   justify-content: space-between;
   gap: 10px;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
 .desc-title {
@@ -491,14 +652,67 @@ body {
   color: #0f172a;
 }
 
+/* ✅ Container controlado (colapsa/expande) */
+.desc-body {
+  position: relative;
+  overflow: hidden;
+  border-radius: 10px;
+}
+
+/* Estado colapsado */
+.desc.is-collapsed .desc-body {
+  max-height: 140px;
+}
+
+/* Texto */
 .desc-text {
   margin: 0;
   color: #334155;
   font-size: 13px;
   line-height: 1.45;
+  white-space: pre-line;
 }
 
-/* CTA */
+/* Gradiente “sumindo” no final (só quando colapsado) */
+.desc-fade {
+  display: none;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 56px;
+  background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,1));
+  pointer-events: none;
+}
+
+.desc.is-collapsed .desc-fade { display: block; }
+
+/* Botão */
+.desc-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  margin-top: 10px;
+  width: 100%;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  color: #111827;
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-weight: 900;
+  cursor: pointer;
+  transition: background 120ms ease, box-shadow 120ms ease, transform 120ms ease;
+}
+
+.desc-toggle:hover {
+  background: #f9fafb;
+  box-shadow: 0 8px 16px rgba(17, 24, 39, 0.06);
+}
+
+.desc-toggle:active { transform: translateY(1px); }
+/* ========================================================= */
+
 .cta-row {
   display: grid;
   grid-template-columns: 1fr;
@@ -591,9 +805,7 @@ body {
   background: #fbfdff;
 }
 
-.mini {
-  font-size: 12px;
-}
+.mini { font-size: 12px; }
 
 .foot-left, .foot-right {
   display: flex;
@@ -640,28 +852,36 @@ body {
 @media (max-width: 980px) {
   .product {
     grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
   }
 
   .product-info {
+    grid-column: 1 / 2;
+    grid-row: 3 / 4;
     position: static;
   }
 
-  .main-image {
-    height: 360px;
+  .product-media {
+    grid-column: 1 / 2;
+    grid-row: 1 / 2;
   }
+
+  .desc {
+    grid-column: 1 / 2;
+    grid-row: 2 / 3;
+  }
+
+  .main-image { height: 360px; }
 }
 
-@media (max-width: 560px) {
-  .wrap {
-    padding: 14px 12px 22px;
-  }
+@media (max-width: 760px) {
+  .wrap { padding: 14px 12px 22px; }
 
   .topbar {
     flex-direction: column;
     align-items: flex-start;
   }
 
-  /* ✅ Logo menor no mobile, sem virar outdoor */
   .brand-logo{
     width: 34px;
     height: 34px;
@@ -670,26 +890,22 @@ body {
     max-height: 34px;
   }
 
-  /* ✅ NOVO: no mobile dá um “respiro” a mais entre os ícones */
-  .social-links {
-    gap: 12px;
-  }
+  .social-links { gap: 12px; }
 
-  /* ✅ Promo no mobile: evita quebra feia e mantém compacto */
-  .ml-promo-top {
+  /* ✅ responsivo ML: "encerra em" vai pra linha de baixo (bonito) */
+  .ml-promo-top{
     flex-wrap: wrap;
     row-gap: 6px;
   }
 
-  .ml-promo-end {
+  .ml-promo-end{
     width: 100%;
     justify-content: flex-start;
   }
 
-  /* Mantém layout estilo ML, mas compacto:
-     thumbs continuam à esquerda e imagem no centro */
   .product-media {
     grid-template-columns: 62px 1fr;
+    grid-template-areas: "thumbs main";
     gap: 10px;
   }
 
@@ -699,11 +915,791 @@ body {
     border-radius: 10px;
   }
 
-  .main-image {
-    height: 300px;
+  .main-image { height: 300px; }
+
+  .price-value { font-size: 34px; }
+
+  /* ✅ Promo: mais compacto no mobile */
+  .ml-promo-tag{
+    font-size: 11px;
+    padding: 4px 7px;
+    border-radius: 8px;
   }
 
-  .price-value {
-    font-size: 26px;
+  .ml-discount{
+    font-size: 12px;
+    padding: 3px 9px;
+    border-radius: 8px;
   }
 }
+
+/* ✅ EXTRA: telas menores ainda (celular pequeno) */
+@media (max-width: 420px){
+  .card-body{ padding: 14px; }
+  .card-head{ padding: 14px 14px 10px; }
+
+  .product-media{
+    padding: 8px;
+    gap: 10px;
+    grid-template-columns: 56px 1fr;
+  }
+
+  .thumb{
+    width: 52px;
+    height: 52px;
+    border-radius: 10px;
+  }
+
+  .main-image{ height: 270px; }
+
+  .price-row{ padding: 12px; border-radius: 14px; }
+  .price-value{ font-size: 32px; }
+
+  .ml-promo-top{ padding: 8px 9px; }
+  .ml-promo-bottom{ padding: 10px 9px; }
+
+  .ml-old-price{ font-size: 11px; }
+  .ml-discount{ font-size: 12px; }
+}
+
+/* ✅ EXTRA: modo “micro-tela” (tipo 360px) */
+@media (max-width: 360px){
+  .wrap{ padding: 12px 10px 18px; }
+
+  .product-media{
+    grid-template-columns: 52px 1fr;
+    gap: 9px;
+  }
+
+  .thumb{
+    width: 48px;
+    height: 48px;
+  }
+
+  .main-image{ height: 250px; }
+
+  .price-value{ font-size: 30px; }
+
+  .ml-promo-tag{
+    min-width: 120px;
+    letter-spacing: 0.5px;
+  }
+}
+
+/* =========================================================
+   ✅ ZOOM MODAL (SIMPLES / SEM CARD)
+   ========================================================= */
+
+.main-image{
+  cursor: zoom-in;
+}
+
+.zoomModal{
+  position: fixed;
+  inset: 0;
+  display: none;
+  z-index: 9999;
+}
+
+.zoomModal.is-open{
+  display: block;
+}
+
+.zoomBackdrop{
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,.72);
+}
+
+.zoomPanel{
+  position: absolute;
+  inset: 0;
+  max-width: none;
+  margin: 0;
+  border-radius: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  display: block;
+  overflow: visible;
+}
+
+.zoomClose{
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.22);
+  background: rgba(255,255,255,.92);
+  color: #111827;
+  font-size: 18px;
+  font-weight: 900;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.zoomViewport{
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  background: transparent;
+}
+
+.zoomImage{
+  display: block;
+  max-width: calc(100vw - 36px);
+  max-height: calc(100vh - 36px);
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.zoomFooter{
+  display: none !important;
+}
+
+body.is-zoom-open{
+  overflow: hidden;
+}
+
+@media (max-width: 560px){
+  .zoomClose{
+    top: 10px;
+    right: 10px;
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+  }
+
+  .zoomViewport{
+    padding: 12px;
+  }
+
+  .zoomImage{
+    max-width: calc(100vw - 24px);
+    max-height: calc(100vh - 24px);
+  }
+}
+
+/* =========================================================
+   ✅ SETAS DE NAVEGAÇÃO DO ZOOM
+   ========================================================= */
+
+.zoomArrow{
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,.25);
+  background: rgba(255,255,255,.92);
+  color: #111827;
+  font-size: 26px;
+  font-weight: 900;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 3;
+  transition: all .2s ease;
+}
+
+.zoomArrow:hover{
+  background: #ffffff;
+  transform: translateY(-50%) scale(1.08);
+}
+
+.zoomArrow-left{
+  left: 18px;
+}
+
+.zoomArrow-right{
+  right: 18px;
+}
+
+@media (max-width: 560px){
+  .zoomArrow{
+    width: 46px;
+    height: 46px;
+    font-size: 22px;
+  }
+
+  .zoomArrow-left{
+    left: 10px;
+  }
+
+  .zoomArrow-right{
+    right: 10px;
+  }
+}
+
+/* =========================================================
+   ✅ PATCH FINAL — Timer "OFERTA RELÂMPAGO" estilo ML (mais elegante)
+   - Relógio um pouco menor
+   - Números mais próximos
+   - Visual mais “ML” (tight e alinhado)
+   ========================================================= */
+
+/* Container do timer (JS adiciona .ml-timer em #promoEndsIn) */
+#promoEndsIn.ml-timer{
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  max-width: 100%;
+  min-width: 0;
+}
+
+/* Root do timer não pode quebrar torto */
+#promoEndsIn .ml-timer-root{
+  display: inline-flex;
+  align-items: center;
+
+  /* ✅ mais “colado” */
+  gap: 3px;
+
+  flex-wrap: nowrap;
+  white-space: nowrap;
+  max-width: 100%;
+  min-width: 0;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+/* Separador ":" */
+#promoEndsIn .ml-tsep{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  /* ✅ menor e mais fino */
+  width: 9px;
+
+  font-size: 11px;
+  font-weight: 950;
+  color: rgba(17,24,39,0.72);
+  transform: translateY(-0.5px);
+  flex: 0 0 auto;
+}
+
+/* Quadradinho */
+#promoEndsIn .ml-tbox{
+  position: relative;
+
+  /* ✅ menor + elegante */
+  width: clamp(16px, 4.6vw, 20px);
+  height: clamp(18px, 5.0vw, 22px);
+
+  border-radius: 4px;
+  overflow: hidden;
+
+  background: rgba(255,255,255,0.92);
+  border: 1px solid rgba(17,24,39,0.12);
+  box-shadow:
+    0 1px 0 rgba(17,24,39,0.05),
+    inset 0 1px 0 rgba(255,255,255,0.70);
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  flex: 0 0 auto;
+}
+
+/* Linha do meio */
+#promoEndsIn .ml-tbox::after{
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  background: rgba(17,24,39,0.10);
+  transform: translateY(-0.5px);
+  pointer-events: none;
+}
+
+/* Dígitos */
+#promoEndsIn .ml-tcur,
+#promoEndsIn .ml-tnext{
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+
+  /* ✅ mais compacto */
+  font-size: 11px;
+  font-weight: 1000;
+  letter-spacing: 0.1px;
+  line-height: 1;
+
+  color: #111827;
+
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+/* Próximo */
+#promoEndsIn .ml-tnext{
+  transform: translateY(110%);
+  opacity: 0;
+}
+
+/* Flip */
+#promoEndsIn .ml-tbox.is-flipping .ml-tcur{
+  animation: mlDigitOut 320ms ease-out forwards;
+}
+
+#promoEndsIn .ml-tbox.is-flipping .ml-tnext{
+  animation: mlDigitIn 320ms ease-out forwards;
+}
+
+@keyframes mlDigitOut{
+  0%   { transform: translateY(0%);   opacity: 1; }
+  100% { transform: translateY(-110%); opacity: 0; }
+}
+
+@keyframes mlDigitIn{
+  0%   { transform: translateY(110%); opacity: 0; }
+  100% { transform: translateY(0%);   opacity: 1; }
+}
+
+#promoFinalMsg{
+  margin-top: 8px;
+  padding: 10px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(17,24,39,0.10);
+  background: rgba(255,255,255,0.70);
+  color: #111827;
+  font-weight: 900;
+  font-size: 12px;
+}
+
+/* Estado encerrado */
+.ml-promo.is-ended{
+  opacity: 0.96;
+}
+
+.ml-promo.is-ended .ml-promo-top{
+  filter: grayscale(0.15);
+}
+
+.ml-promo.is-ended .ml-tbox{
+  background: rgba(255,255,255,0.85);
+  border-color: rgba(17,24,39,0.16);
+}
+
+/* Mobile: timer ainda menor */
+@media (max-width: 560px){
+  #promoEndsIn .ml-timer-root{
+    gap: 3px;
+  }
+
+  #promoEndsIn .ml-tbox{
+    width: clamp(16px, 4.6vw, 20px);
+    height: clamp(18px, 5.0vw, 22px);
+  }
+
+  #promoEndsIn .ml-tcur,
+  #promoEndsIn .ml-tnext{
+    font-size: 10.5px;
+  }
+
+  #promoEndsIn .ml-tsep{
+    width: 8px;
+    font-size: 10.5px;
+  }
+}
+
+/* =========================================================
+   ✅ PATCH FIX — evita “vazamento” da faixa da promo no mobile
+   Motivo: flex/grid min-width + timer nowrap empurrando layout
+   ========================================================= */
+
+/* 1) Permite que a coluna direita realmente ENCOLHA */
+.product-info,
+.price-row{
+  min-width: 0; /* 🔥 ESSENCIAL em grid/flex pra não estourar */
+}
+
+/* 2) Impede a barra de “crescer” além do card */
+.ml-promo-top{
+  max-width: 100%;
+  overflow: hidden;     /* não deixa a faixa vazar */
+  flex-wrap: wrap;      /* wrap sempre: só quebra quando precisar */
+}
+
+/* 3) Faz “Encerra em + timer” cair pra linha de baixo quando apertar (container-based) */
+.ml-promo-end{
+  flex: 1 1 100%;       /* pode virar 2ª linha quando necessário */
+  width: 100%;
+  justify-content: flex-start;
+}
+
+/* 4) Timer respeita largura do card e não empurra a barra */
+#promoEndsIn{
+  max-width: 100%;
+  min-width: 0;
+}
+
+#promoEndsIn .ml-timer-root{
+  max-width: 100%;
+  min-width: 0;
+}
+
+/* =========================================================
+   ✅ ML META (Novo | Vendidos | Nota | Estrelas | Avaliações)
+   - Mais foco e presença (sem perder elegância)
+   ========================================================= */
+
+.meta-row.ml-meta{
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+
+  /* ✅ mais “respiro” + hierarquia */
+  gap: 6px;
+
+  padding: 12px 14px;
+  margin-bottom: 12px;
+
+  border-radius: 14px;
+  border: 1px solid #e9eef6;
+  background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+
+  /* ✅ leve destaque premium */
+  box-shadow:
+    0 10px 18px rgba(17, 24, 39, 0.04),
+    0 1px 0 rgba(17, 24, 39, 0.03);
+
+  min-width: 0;
+}
+
+/* Linha 1: "Novo | +10 mil vendidos" */
+#mlMetaTopLine{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+
+  /* ✅ mais visível */
+  font-size: 13px;
+  font-weight: 900;
+  color: #0f172a;
+
+  min-width: 0;
+}
+
+/* ✅ “Novo” com micro-pill elegante (sem exagero) */
+#mlMetaTopLine .ml-meta-condition{
+  display: inline-flex;
+  align-items: center;
+
+  padding: 3px 8px;
+  border-radius: 999px;
+
+  border: 1px solid rgba(37, 99, 235, 0.14);
+  background: rgba(37, 99, 235, 0.06);
+  color: #0f172a;
+}
+
+/* Separador */
+#mlMetaTopLine .ml-meta-sep{
+  color: #cbd5e1;
+  font-weight: 800;
+}
+
+/* ✅ vendidos com contraste melhor */
+#mlMetaTopLine .ml-meta-sold{
+  color: #475569;
+  font-weight: 800;
+}
+
+/* Linha 2: "4,8 ★★★★★ (13688)" */
+#mlMetaRatingLine{
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+
+  /* ✅ mais legível */
+  font-size: 13px;
+  color: #0f172a;
+
+  min-width: 0;
+}
+
+/* ✅ nota com mais protagonismo */
+#mlMetaRatingLine .ml-meta-rating{
+  font-weight: 1000;
+  letter-spacing: 0.1px;
+  font-size: 14px;
+}
+
+/* ✅ avaliações mais claras (sem sumir) */
+#mlMetaRatingLine .ml-meta-reviews{
+  color: #475569;
+  font-weight: 800;
+}
+
+/* =========================================================
+   ✅ ESTRELAS (CSS puro) - maiores + mais “nítidas”
+   ========================================================= */
+
+.ml-stars{
+  display: inline-flex;
+  align-items: center;
+
+  /* ✅ mais “presença” */
+  gap: 2px;
+
+  transform: translateY(-0.5px);
+}
+
+.ml-star{
+  position: relative;
+  width: 16px;
+  height: 16px;
+  display: inline-block;
+}
+
+/* Base da estrela */
+.ml-star::before{
+  content: "★";
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+
+  font-size: 16px;
+  line-height: 1;
+
+  color: #d1d5db;
+}
+
+/* Cheia */
+.ml-star.is-full::before{
+  color: #f59e0b;
+}
+
+/* Meia estrela */
+.ml-star.is-half::after{
+  content: "★";
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+
+  font-size: 16px;
+  line-height: 1;
+
+  color: #f59e0b;
+
+  width: 50%;
+  overflow: hidden;
+}
+
+/* Vazia */
+.ml-star.is-empty::before{
+  color: #d1d5db;
+}
+
+/* =========================================================
+   ✅ Mobile: mantém foco sem “pesar”
+   ========================================================= */
+@media (max-width: 560px){
+  .meta-row.ml-meta{
+    padding: 11px 12px;
+    border-radius: 14px;
+    gap: 6px;
+  }
+
+  #mlMetaTopLine,
+  #mlMetaRatingLine{
+    gap: 8px;
+  }
+
+  #mlMetaTopLine{
+    font-size: 13px;
+  }
+
+  #mlMetaRatingLine{
+    font-size: 13px;
+  }
+
+  #mlMetaRatingLine .ml-meta-rating{
+    font-size: 14px;
+  }
+
+  .ml-star{
+    width: 15px;
+    height: 15px;
+  }
+
+  .ml-star::before,
+  .ml-star.is-half::after{
+    font-size: 15px;
+  }
+}
+
+/* =========================================================
+   ✅ CARD ABAIXO DO "VER NO MERCADO LIVRE" (IMAGEM /loja/MLBxxxx.png)
+   - Enquadra perfeitamente a imagem (sem deformar)
+   - Mantém visual marketplace clean
+   - Responsivo e sem estourar a coluna direita
+   - JS controla: #lojaCard (hidden on/off) e #lojaImage (src)
+   ========================================================= */
+
+#lojaCard{
+  margin-top: 12px;                 /* ✅ respiro abaixo do botão */
+  border: 1px solid #eef2f7;
+  border-radius: 14px;
+  background: #ffffff;
+
+  /* ✅ cara “premium” sutil */
+  box-shadow:
+    0 10px 18px rgba(17, 24, 39, 0.04),
+    0 1px 0 rgba(17, 24, 39, 0.03);
+
+  overflow: hidden;
+  width: 100%;
+  min-width: 0;                      /* ✅ ESSENCIAL em grid */
+}
+
+/* ✅ Área que garante o enquadramento */
+#lojaCard .loja-media{
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;              /* ✅ “perfeito” e consistente */
+  background: #f8fafc;               /* ✅ fundo neutro p/ transparência */
+  display: grid;
+  place-items: center;
+}
+
+/* ✅ A imagem em si (sem distorcer, sem estourar) */
+#lojaImage{
+  width: 100%;
+  height: 100%;
+  object-fit: contain;               /* ✅ não corta, não deforma */
+  display: block;
+
+  /* ✅ deixa a imagem mais “nítida” em assets PNG */
+  image-rendering: auto;
+}
+
+/* ✅ (Opcional) legenda / nota, caso você tenha no HTML */
+#lojaCard .loja-caption{
+  padding: 10px 12px;
+  font-size: 12px;
+  color: #475569;
+  line-height: 1.35;
+  border-top: 1px solid #eef2f7;
+}
+
+/* ✅ Mobile: proporção um pouco mais “alta” pra não ficar baixinho */
+@media (max-width: 760px){
+  #lojaCard{
+    margin-top: 10px;
+    border-radius: 14px;
+  }
+
+  #lojaCard .loja-media{
+    aspect-ratio: 4 / 3;            /* ✅ melhor no celular */
+  }
+}
+
+/* ✅ Micro-telas: mantém elegante e sem “apertar” */
+@media (max-width: 420px){
+  #lojaCard .loja-media{
+    aspect-ratio: 1 / 1;            /* ✅ quadrado fica top em 360~420px */
+  }
+}
+
+/* =========================================================
+   ✅ DESTAQUE PREMIUM — PILL "FRETE GRÁTIS"
+   - Verde sofisticado, sem parecer “cartaz”
+   - Sem mexer no HTML: detecta pelo texto
+   - Cole ESTE BLOCO após o CSS base de .pill
+   ========================================================= */
+
+/* Base: mantém o resto igual e só “eleva” o Frete grátis */
+.pill{
+  transition: transform 140ms ease, box-shadow 140ms ease, border-color 140ms ease, background 140ms ease, color 140ms ease;
+}
+
+/* ✅ Seleciona o pill pelo conteúdo textual (sem classe extra no HTML) */
+.pill:has(> :not(*)){} /* noop: compatibilidade (não altera nada) */
+
+/* Melhor compatibilidade: aplica se o pill contém a palavra "Frete" */
+.pill{
+  position: relative;
+}
+
+/* Browsers modernos (Chrome/Edge/Safari): :has() permite mirar pelo texto via data? não temos.
+   Então usamos uma abordagem robusta: estiliza o PRIMEIRO pill (geralmente Frete grátis) + fallback por ordem. */
+
+/* ✅ Se "Frete grátis" é o 1º chip (como no seu print), ele ganha o destaque */
+.chips .chip:first-child,
+.chips .pill:first-child{
+  border-color: rgba(16, 185, 129, 0.40);
+  background: linear-gradient(180deg, rgba(16,185,129,0.14) 0%, rgba(16,185,129,0.08) 100%);
+  color: #065f46; /* verde escuro elegante */
+
+  font-weight: 900;
+  letter-spacing: 0.1px;
+
+  box-shadow:
+    0 10px 22px rgba(16, 185, 129, 0.14),
+    0 1px 0 rgba(17, 24, 39, 0.03),
+    inset 0 1px 0 rgba(255,255,255,0.55);
+}
+
+/* ✅ Micro-selo discreto (premium, não carnavalesco) */
+.chips .chip:first-child::after,
+.chips .pill:first-child::after{
+  margin-left: 8px;
+  font-weight: 1000;
+  font-size: 12px;
+  color: rgba(6, 95, 70, 0.85);
+}
+
+/* ✅ Hover/Active: dá “vida” sem virar neon */
+.chips .chip:first-child:hover,
+.chips .pill:first-child:hover{
+  transform: translateY(-1px);
+  border-color: rgba(16, 185, 129, 0.55);
+  box-shadow:
+    0 14px 28px rgba(16, 185, 129, 0.18),
+    0 1px 0 rgba(17, 24, 39, 0.03),
+    inset 0 1px 0 rgba(255,255,255,0.55);
+}
+
+.chips .chip:first-child:active,
+.chips .pill:first-child:active{
+  transform: translateY(0px);
+}
+
+/* ✅ Mobile: mantém destaque e evita “estourar” */
+@media (max-width: 560px){
+  .chips .chip:first-child,
+  .chips .pill:first-child{
+    box-shadow:
+      0 10px 20px rgba(16, 185, 129, 0.14),
+      0 1px 0 rgba(17, 24, 39, 0.03),
+      inset 0 1px 0 rgba(255,255,255,0.55);
+  }
+}
+
+
+

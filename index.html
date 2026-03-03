@@ -48,9 +48,22 @@
         </div>
       </div>
 
-      <!-- 🔄 SUBSTITUÍDO: Redes sociais (imagens oficiais coloridas) -->
-      <div class="trust social-links">
+      <!-- ✅ NOVO: Botão "Ir a loja" (substitui os ícones por enquanto) -->
+      <div class="trust">
+        <a
+          class="btn btn-ghost"
+          href="https://www.mercadolivre.com.br/social/maiatec/lists/8d54606c-324e-47cf-b4ab-b79f46409ad5?matt_tool=99887095&forceInApp=true"
+          target="_blank"
+          rel="noopener"
+          aria-label="Ir a loja no Mercado Livre"
+          title="Ir a loja"
+        >
+          Ir a loja <span class="btn-icon">↗</span>
+        </a>
+      </div>
 
+      <!-- ✅ OCULTO (para reativar no futuro sem perder nada) -->
+      <div class="trust social-links" hidden aria-hidden="true">
         <!-- Instagram -->
         <a
           href="https://instagram.com/samitostoreoficial"
@@ -107,7 +120,6 @@
             style="display:block"
           />
         </a>
-
       </div>
     </header>
 
@@ -127,42 +139,74 @@
             <div class="thumbs" id="thumbs"></div>
           </div>
 
-          <div class="product-info">
-            <div class="meta-row">
-              <span class="pill" id="categoryPill">Categoria</span>
-              <span class="dot-sep">•</span>
-              <span class="muted" id="sourcePill">Origem: Anúncio</span>
+          <!-- ✅ MOVIDO: Descrição agora fica ABAIXO das imagens (coluna esquerda) -->
+          <div class="desc is-collapsed" id="descBox">
+            <div class="desc-head">
+              <span class="desc-title">Descrição</span>
+              <span class="desc-note muted" id="descNote">Resumo do anúncio</span>
             </div>
+
+            <!-- ✅ NOVO: corpo com corte/gradiente -->
+            <div class="desc-body" id="descBody">
+              <p class="desc-text" id="descText">—</p>
+              <div class="desc-fade" aria-hidden="true"></div>
+            </div>
+
+            <!-- ✅ NOVO: botão de expandir/colapsar -->
+            <button id="descToggle" class="desc-toggle" type="button" aria-expanded="false">
+              VEM MAIS
+            </button>
+          </div>
+          <!-- ✅ FIM do bloco movido -->
+
+          <div class="product-info">
+
+            <!-- ✅ SUBSTITUÍDO: Categoria/Origem -> Meta Mercado Livre -->
+            <div class="meta-row ml-meta" id="categoryOriginBox" aria-label="Informações do anúncio">
+              <!-- Linha 1: "Novo | +10 mil vendidos" -->
+              <div class="ml-meta-top" id="mlMetaTopLine">—</div>
+
+              <!-- Linha 2: "4,8 ★★★★★ (13688)" -->
+              <div class="ml-meta-rating" id="mlMetaRatingLine">—</div>
+            </div>
+            <!-- ✅ FIM -->
 
             <div class="price-row">
               <div class="price">
-                <span class="price-label">Preço</span>
 
-                <!-- ✅ NOVO: Bloco estilo Mercado Livre (Oferta Relâmpago) -->
-                <!-- Regras:
-                     - Preço atual (priceValue) = 47% do preço anterior
-                     - Desconto = 53% OFF
-                     - oldPriceValue e promoEndsIn serão preenchidos/ajustados via JS depois -->
                 <div class="ml-promo" id="promoBox" aria-label="Oferta relâmpago">
                   <div class="ml-promo-top">
                     <span class="ml-promo-tag">OFERTA RELÂMPAGO</span>
+
+                    <!-- ✅ UPGRADE: wrapper dedicado para o timer estilo ML -->
                     <span class="ml-promo-end">
-                      Encerra em <span id="promoEndsIn">—</span>
+                      Encerra em
+                      <span class="ml-timer" id="promoEndsIn" aria-label="Tempo restante da oferta">—</span>
                     </span>
                   </div>
 
                   <div class="ml-promo-bottom">
                     <span class="ml-old-price" id="oldPriceValue">—</span>
-                    <span class="ml-discount" id="discountValue">53% OFF</span>
+
+                    <!-- ✅ ATUALIZADO: desconto agora é dinâmico via JS (price vs oldPrice) -->
+                    <span class="ml-discount" id="promoDiscountValue">—</span>
+                  </div>
+
+                  <!-- ✅ UPGRADE: mensagem de finalização (fica escondida até o JS ativar) -->
+                  <div class="ml-promo-final" id="promoFinalMsg" role="status" aria-live="polite" hidden>
+                    Oferta finalizada! Confira novo preço no Mercado Livre!
                   </div>
                 </div>
-                <!-- ✅ FIM do bloco ML -->
 
                 <span class="price-value" id="priceValue">—</span>
-                <span class="price-sub" id="priceSub">Preço exibido no Mercado Livre</span>
+
+                <!-- ✅ REMOVIDO VISUALMENTE (mantido para não quebrar o JS) -->
+                <span class="price-sub" id="priceSub" hidden>Oferta por tempo limitado, acompanhe o cronômetro acima para não perder a oportunidade!</span>
               </div>
 
-              <div class="rating">
+              <!-- ✅ REMOVIDO VISUALMENTE: Confiança / Alta / Compra no Mercado Livre
+                   (mantido para não quebrar o JS caso ele atualize trustValue) -->
+              <div class="rating" hidden>
                 <span class="rating-label">Confiança</span>
                 <span class="rating-value" id="trustValue">Alta</span>
                 <span class="rating-sub" id="trustSub">Compra no Mercado Livre</span>
@@ -171,19 +215,12 @@
 
             <div class="chips" id="chips"></div>
 
-            <ul class="bullets" id="bullets">
+            <!-- ✅ REMOVIDO VISUALMENTE: bullets explicativos (mantido para evitar erro de querySelector) -->
+            <ul class="bullets" id="bullets" hidden>
               <li>Você concluirá a compra dentro do Mercado Livre.</li>
               <li>Este site apenas direciona para a oferta.</li>
               <li>Redirecionamento rápido e seguro.</li>
             </ul>
-
-            <div class="desc" id="descBox">
-              <div class="desc-head">
-                <span class="desc-title">Descrição</span>
-                <span class="desc-note muted" id="descNote">Resumo do anúncio</span>
-              </div>
-              <p class="desc-text" id="descText">—</p>
-            </div>
 
             <div class="cta-row">
               <button id="goMlBtn" class="btn btn-primary" type="button">
@@ -191,38 +228,92 @@
                 <span class="btn-icon">↗</span>
               </button>
 
-              <button id="copyLinkBtn" class="btn btn-ghost" type="button">
+              <!-- ✅ REMOVIDO VISUALMENTE: botão "Copiar link" (mantido para não quebrar handlers do JS) -->
+              <button id="copyLinkBtn" class="btn btn-ghost" type="button" hidden aria-hidden="true" tabindex="-1">
                 Copiar link
               </button>
             </div>
 
-            <p class="fineprint" id="fineprint">
+            <!-- ✅ NOVO: CARD DE IMAGEM (abaixo do botão "Ver no Mercado Livre")
+                 - A imagem será carregada via JS usando o MLB da URL:
+                   assets/img/products/loja/MLBxxxx.png
+                 - Começa hidden para o JS exibir só quando houver imagem válida -->
+            <div class="loja-card" id="lojaCard" hidden>
+              <div class="loja-card-inner loja-media" aria-label="Imagem adicional do produto">
+                <img
+                  id="lojaImage"
+                  src=""
+                  alt="Imagem adicional do produto"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
+            </div>
+            <!-- ✅ FIM do card -->
+
+            <!-- ✅ REMOVIDO VISUALMENTE: mensagem de redirecionamento automático -->
+            <p class="fineprint" id="fineprint" hidden>
               Se não redirecionar automaticamente, clique em “Ver no Mercado Livre”.
             </p>
-
-            <div class="timer" id="timerBox">
-              <span class="timer-label">Redirecionando em</span>
-              <span class="timer-value" id="countdown">—</span>
-              <span class="timer-label">segundos…</span>
-            </div>
 
             <div class="error" id="errorBox"></div>
           </div>
         </div>
       </div>
 
-      <footer class="card-foot">
-        <div class="foot-left">
-          <span class="mini">🔎 Curadoria</span>
-          <span class="mini muted">•</span>
-          <span class="mini muted" id="footCategory">—</span>
-        </div>
-
-        <div class="foot-right">
-          <span class="mini muted" id="footUtm">UTM: —</span>
-        </div>
-      </footer>
     </section>
+
+    <!-- =========================================================
+         ✅ NOVO CARD: OPINIÕES (IMAGENS)
+         - Mesma aparência (usa .card)
+         - Estrutura igual à mídia do produto: imagem principal + thumbs
+         - JS vai carregar imagens no padrão: MLBXXXX_OP_1, _2, _3...
+         - O zoom/navegação será integrado depois no JS
+         ========================================================= -->
+    <section class="card" id="opinionsCard" aria-label="Opiniões dos compradores">
+      <div class="card-head">
+        <h2 id="opinionsTitle">Opiniões dos compradores</h2>
+        <p class="subtitle" id="opinionsSubtitle">
+          Imagens reais enviadas por quem comprou.
+        </p>
+      </div>
+
+      <div class="card-body">
+        <div class="product">
+          <!-- Reutiliza o mesmo layout visual: thumbs (esq) + imagem (centro) + espaço (dir) -->
+          <div class="product-media" aria-hidden="false">
+            <!-- Skeleton próprio (para o JS controlar) -->
+            <div class="media-skeleton" id="opMediaSkeleton"></div>
+
+            <!-- Imagem principal das opiniões -->
+            <img
+              id="opMainImage"
+              class="main-image"
+              alt="Opinião do comprador"
+              loading="lazy"
+              decoding="async"
+            />
+
+            <!-- Miniaturas das opiniões -->
+            <div class="thumbs" id="opThumbs" aria-label="Miniaturas das opiniões"></div>
+          </div>
+
+          <!-- Coluna direita: mantida para preservar o grid do layout (JS pode preencher ou deixar clean) -->
+          <div class="product-info">
+            <div class="meta-row ml-meta" aria-label="Resumo das opiniões">
+              <div class="ml-meta-top">
+                <strong>Fotos de avaliações</strong>
+                <span class="muted" id="opHint" style="margin-left:8px;">(carregando…)</span>
+              </div>
+              <div class="ml-meta-rating muted" id="opCountLine">—</div>
+            </div>
+
+            <div class="error" id="opErrorBox"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- ✅ FIM do card de opiniões -->
 
     <section class="notes">
       <h2 class="notes-title">Transparência</h2>
@@ -232,9 +323,29 @@
     </section>
 
     <footer class="page-footer">
-      <p class="footer-text">© <span id="year"></span> Curadoria • Redirecionamento seguro</p>
+      <p class="footer-text">© <span id="year"></span> Samito Store • Desde 2009 compartilhando as melhores oportunidades!</p>
     </footer>
   </main>
+
+  <!-- =========================================================
+       ✅ MODAL DE IMAGEM (AMPLIAR)
+       - Abre ao clicar na imagem grande (#mainImage)
+       - Fundo opaco para dar efeito de destaque
+       - Fecha SOMENTE no botão X
+       ========================================================= -->
+  <div id="zoomModal" class="zoomModal" aria-hidden="true">
+    <div class="zoomBackdrop"></div>
+
+    <div class="zoomPanel" role="dialog" aria-modal="true" aria-label="Imagem ampliada">
+      <button id="zoomClose" class="zoomClose" type="button" aria-label="Fechar imagem">✕</button>
+      <button id="zoomPrev" class="zoomArrow zoomArrow-left">‹</button>
+      <button id="zoomNext" class="zoomArrow zoomArrow-right">›</button>
+      <div id="zoomViewport" class="zoomViewport">
+        <img id="zoomImage" class="zoomImage" alt="Imagem ampliada" src="" />
+      </div>
+
+    </div>
+  </div>
 
   <script src="js/app.js"></script>
 </body>
