@@ -21,7 +21,7 @@
   /* -----------------------------
      ✅ CONFIG
   ----------------------------- */
-  const PIXEL_ID = "1320114336590635";
+  const PIXEL_ID = "1430620332037637";
   const FALLBACK_ML_URL = "https://www.mercadolivre.com.br/";
 
   const CATALOG_URL = "/data/catalog.json";
