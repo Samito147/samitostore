@@ -9,6 +9,7 @@
   - rastrear eventos relevantes de comportamento
   - preparar hooks para progresso real de vídeo
   - bloquear o restante da página até 60 segundos da VSL principal
+  - implementar Micro Conversão Progressiva com segurança
 
   EVENTOS RASTREADOS:
   - PageView
@@ -23,6 +24,13 @@
   - Social proof visibility
   - Video progress hooks (prontos para API do player)
   - ContentUnlockedAfter60s
+
+  EVENTOS DE MICRO CONVERSÃO PROGRESSIVA:
+  - Engaged
+  - Scroll50
+  - Scroll90
+  - OutboundClick
+  - PurchaseIntent
 
   OBSERVAÇÃO IMPORTANTE:
   Este arquivo mede com precisão tudo que acontece na página.
@@ -82,6 +90,24 @@ const PROVA_SOCIAL_MARCOS_SEGUNDOS = [5, 15, 30];
 --------------------------------------------------------- */
 const VIDEO_PROGRESS_MARCOS = [10, 25, 50, 75, 90, 100];
 
+/* ---------------------------------------------------------
+   CONFIGURAÇÕES DA MICRO CONVERSÃO PROGRESSIVA
+   Define a "escada" de intenção comportamental
+--------------------------------------------------------- */
+const MICRO_CONVERSAO_CONFIG = {
+  engagedSegundos: 30,
+  scroll50: 50,
+  scroll90: 90,
+  purchaseIntentScrollMinimo: 90,
+  purchaseIntentTempoMinimo: 30,
+  purchaseIntentValor: 289.90,
+  contentName: "Máquina de Vendas Online 3.0",
+  contentCategory: "landing_page",
+  contentType: "product",
+  contentId: "maquina-de-vendas-online-3-0",
+  currency: "BRL"
+};
+
 /* =========================================================
    ESTADO GLOBAL
    Guarda dados úteis para evitar eventos duplicados
@@ -100,7 +126,25 @@ const estadoTracking = {
   contextoPagina: null,
   paginaIniciadaEm: Date.now(),
   conteudoBloqueadoLiberado: false,
-  elementosBloqueados: []
+  elementosBloqueados: [],
+
+  /* -------------------------------------------------------
+     Estado dedicado à Micro Conversão Progressiva
+     Controla os degraus comportamentais da página
+  ------------------------------------------------------- */
+  microConversao: {
+    engaged: false,
+    scroll50: false,
+    scroll90: false,
+    outboundClick: false,
+    ctaPrincipalClick: false,
+    whatsappClick: false,
+    purchaseIntentEnviado: false,
+    ultimoScrollPercent: 0,
+    segundosNaPagina: 0,
+    ultimoOutboundDestino: "",
+    ultimoCTA: ""
+  }
 };
 
 /* =========================================================
@@ -291,6 +335,195 @@ function trackCustom(evento, parametros = {}) {
 }
 
 /* =========================================================
+   FUNÇÃO UTILITÁRIA: obterPayloadBaseDaOferta
+   Padroniza os dados da oferta enviados ao Pixel
+========================================================= */
+function obterPayloadBaseDaOferta() {
+  return {
+    content_name: MICRO_CONVERSAO_CONFIG.contentName,
+    content_category: MICRO_CONVERSAO_CONFIG.contentCategory,
+    content_type: MICRO_CONVERSAO_CONFIG.contentType,
+    content_ids: [MICRO_CONVERSAO_CONFIG.contentId],
+    value: MICRO_CONVERSAO_CONFIG.purchaseIntentValor,
+    currency: MICRO_CONVERSAO_CONFIG.currency
+  };
+}
+
+/* =========================================================
+   FUNÇÃO UTILITÁRIA: obterPayloadBaseMicroConversao
+   Complementa os eventos progressivos com contexto da página
+========================================================= */
+function obterPayloadBaseMicroConversao() {
+  const contexto = estadoTracking.contextoPagina || {};
+
+  return {
+    ...obterPayloadBaseDaOferta(),
+    page_title: contexto.page_title || document.title || "",
+    page_path: contexto.page_path || window.location.pathname,
+    page_url: contexto.page_url || window.location.href,
+    utm_source: contexto.utm_source || "",
+    utm_medium: contexto.utm_medium || "",
+    utm_campaign: contexto.utm_campaign || "",
+    utm_content: contexto.utm_content || "",
+    utm_term: contexto.utm_term || "",
+    fbclid: contexto.fbclid || ""
+  };
+}
+
+/* =========================================================
+   FUNÇÃO: avaliarMicroConversaoProgressiva
+   Verifica se os degraus já foram alcançados e dispara
+   os eventos progressivos sem duplicidade
+========================================================= */
+function avaliarMicroConversaoProgressiva() {
+  const micro = estadoTracking.microConversao;
+  const payloadBase = obterPayloadBaseMicroConversao();
+
+  /* -------------------------------------------------------
+     DEGRAU 1: Engaged
+     Usuário ficou tempo suficiente na página
+  ------------------------------------------------------- */
+  if (
+    !micro.engaged &&
+    micro.segundosNaPagina >= MICRO_CONVERSAO_CONFIG.engagedSegundos
+  ) {
+    micro.engaged = true;
+
+    trackStandard("Lead", {
+      ...obterPayloadBaseDaOferta()
+    });
+
+    trackCustom("Engaged", {
+      ...payloadBase,
+      engaged_seconds: MICRO_CONVERSAO_CONFIG.engagedSegundos
+    });
+  }
+
+  /* -------------------------------------------------------
+     DEGRAU 2: Scroll50
+     Usuário consumiu metade da página
+  ------------------------------------------------------- */
+  if (
+    !micro.scroll50 &&
+    micro.ultimoScrollPercent >= MICRO_CONVERSAO_CONFIG.scroll50
+  ) {
+    micro.scroll50 = true;
+
+    trackCustom("Scroll50", {
+      ...payloadBase,
+      scroll_percent: MICRO_CONVERSAO_CONFIG.scroll50
+    });
+  }
+
+  /* -------------------------------------------------------
+     DEGRAU 3: Scroll90
+     Usuário chegou ao fundo estratégico da copy
+  ------------------------------------------------------- */
+  if (
+    !micro.scroll90 &&
+    micro.ultimoScrollPercent >= MICRO_CONVERSAO_CONFIG.scroll90
+  ) {
+    micro.scroll90 = true;
+
+    trackCustom("Scroll90", {
+      ...payloadBase,
+      scroll_percent: MICRO_CONVERSAO_CONFIG.scroll90
+    });
+  }
+
+  /* -------------------------------------------------------
+     DEGRAU 4: PurchaseIntent
+     Combinação forte:
+     - tempo mínimo na página
+     - scroll profundo
+     - clique intencional em CTA/Outbound/WhatsApp
+  ------------------------------------------------------- */
+  const houveCliqueIntencional =
+    micro.ctaPrincipalClick ||
+    micro.outboundClick ||
+    micro.whatsappClick;
+
+  const atingiuTempoMinimo =
+    micro.segundosNaPagina >= MICRO_CONVERSAO_CONFIG.purchaseIntentTempoMinimo;
+
+  const atingiuScrollMinimo =
+    micro.ultimoScrollPercent >= MICRO_CONVERSAO_CONFIG.purchaseIntentScrollMinimo;
+
+  if (
+    !micro.purchaseIntentEnviado &&
+    houveCliqueIntencional &&
+    atingiuTempoMinimo &&
+    atingiuScrollMinimo
+  ) {
+    micro.purchaseIntentEnviado = true;
+
+    trackCustom("PurchaseIntent", {
+      ...payloadBase,
+      intent_level: "high",
+      engaged_seconds: micro.segundosNaPagina,
+      scroll_percent: micro.ultimoScrollPercent,
+      clicked_cta: micro.ctaPrincipalClick,
+      clicked_outbound: micro.outboundClick,
+      clicked_whatsapp: micro.whatsappClick,
+      destination_url: micro.ultimoOutboundDestino || "",
+      cta_text: micro.ultimoCTA || ""
+    });
+  }
+}
+
+/* =========================================================
+   FUNÇÃO: registrarCliqueIntencional
+   Marca cliques relevantes para a escada progressiva
+========================================================= */
+function registrarCliqueIntencional({
+  tipo = "",
+  destino = "",
+  ctaText = ""
+} = {}) {
+  const micro = estadoTracking.microConversao;
+
+  if (tipo === "cta") {
+    micro.ctaPrincipalClick = true;
+    micro.ultimoCTA = ctaText || micro.ultimoCTA;
+  }
+
+  if (tipo === "whatsapp") {
+    micro.whatsappClick = true;
+  }
+
+  if (tipo === "outbound") {
+    micro.outboundClick = true;
+  }
+
+  if (destino) {
+    micro.ultimoOutboundDestino = destino;
+  }
+
+  avaliarMicroConversaoProgressiva();
+}
+
+/* =========================================================
+   FUNÇÃO UTILITÁRIA: calcularProfundidadeScrollAtual
+   Centraliza o cálculo do percentual de scroll da página
+========================================================= */
+function calcularProfundidadeScrollAtual() {
+  const scrollTop = window.scrollY || window.pageYOffset || 0;
+  const alturaDocumento = Math.max(
+    document.body.scrollHeight,
+    document.documentElement.scrollHeight
+  );
+  const alturaViewport = window.innerHeight || document.documentElement.clientHeight || 0;
+
+  const totalRolavel = alturaDocumento - alturaViewport;
+
+  if (totalRolavel <= 0) {
+    return 100;
+  }
+
+  return Math.min(100, Math.round((scrollTop / totalRolavel) * 100));
+}
+
+/* =========================================================
    FUNÇÃO: enviarPageViewInicial
    Dispara eventos base de entrada na página
    OBS:
@@ -370,25 +603,17 @@ function ativarRevelacao() {
    Mede a profundidade de scroll da página
 ========================================================= */
 function inicializarScrollDepth() {
-  function calcularProfundidadeScroll() {
-    const scrollTop = window.scrollY || window.pageYOffset || 0;
-    const alturaDocumento = Math.max(
-      document.body.scrollHeight,
-      document.documentElement.scrollHeight
-    );
-    const alturaViewport = window.innerHeight || document.documentElement.clientHeight || 0;
-
-    const totalRolavel = alturaDocumento - alturaViewport;
-
-    if (totalRolavel <= 0) {
-      return 100;
-    }
-
-    return Math.min(100, Math.round((scrollTop / totalRolavel) * 100));
-  }
-
   function verificarScroll() {
-    const profundidadeAtual = calcularProfundidadeScroll();
+    const profundidadeAtual = calcularProfundidadeScrollAtual();
+
+    /* -----------------------------------------------------
+       Atualiza estado global de micro conversão
+       Isso alimenta os degraus Scroll50 e Scroll90
+    ----------------------------------------------------- */
+    estadoTracking.microConversao.ultimoScrollPercent = Math.max(
+      estadoTracking.microConversao.ultimoScrollPercent,
+      profundidadeAtual
+    );
 
     SCROLL_MARCOS.forEach((marco) => {
       if (profundidadeAtual >= marco && !estadoTracking.scrollEnviado.has(marco)) {
@@ -401,6 +626,12 @@ function inicializarScrollDepth() {
         });
       }
     });
+
+    /* -----------------------------------------------------
+       Após atualizar o scroll atual, avaliamos os degraus
+       progressivos da micro conversão
+    ----------------------------------------------------- */
+    avaliarMicroConversaoProgressiva();
   }
 
   window.addEventListener("scroll", verificarScroll, { passive: true });
@@ -415,6 +646,11 @@ function inicializarTempoNaPagina() {
   function verificarTempo() {
     const segundos = Math.floor((Date.now() - estadoTracking.paginaIniciadaEm) / 1000);
 
+    /* -----------------------------------------------------
+       Atualiza o relógio da Micro Conversão Progressiva
+    ----------------------------------------------------- */
+    estadoTracking.microConversao.segundosNaPagina = segundos;
+
     TEMPO_MARCOS_SEGUNDOS.forEach((marco) => {
       if (segundos >= marco && !estadoTracking.tempoPaginaEnviado.has(marco)) {
         estadoTracking.tempoPaginaEnviado.add(marco);
@@ -426,6 +662,12 @@ function inicializarTempoNaPagina() {
         });
       }
     });
+
+    /* -----------------------------------------------------
+       Após atualizar o tempo, reavaliamos os degraus
+       progressivos da micro conversão
+    ----------------------------------------------------- */
+    avaliarMicroConversaoProgressiva();
   }
 
   setInterval(verificarTempo, 1000);
@@ -534,6 +776,16 @@ function inicializarCliquesCTA() {
         page_title: document.title,
         page_path: window.location.pathname
       });
+
+      /* ---------------------------------------------------
+         Marca clique intencional na escada de micro
+         conversão progressiva
+      --------------------------------------------------- */
+      registrarCliqueIntencional({
+        tipo: "cta",
+        destino: cta.href || "",
+        ctaText: texto
+      });
     });
   });
 }
@@ -560,6 +812,16 @@ function inicializarWhatsApp() {
       page_title: document.title,
       page_path: window.location.pathname
     });
+
+    /* ---------------------------------------------------
+       Clique em WhatsApp também é clique intencional
+       forte para a micro conversão progressiva
+    --------------------------------------------------- */
+    registrarCliqueIntencional({
+      tipo: "whatsapp",
+      destino: botaoWhatsApp.href || "",
+      ctaText: "WhatsApp"
+    });
   });
 }
 
@@ -580,6 +842,15 @@ function inicializarOutboundLinks() {
             link_url: link.href,
             link_text: (link.textContent || "").trim().slice(0, 120),
             destination_host: destino.hostname
+          });
+
+          /* -----------------------------------------------
+             Registra outbound como degrau progressivo
+          ----------------------------------------------- */
+          registrarCliqueIntencional({
+            tipo: "outbound",
+            destino: link.href,
+            ctaText: (link.textContent || "").trim().slice(0, 120)
           });
         }
       } catch (erro) {
