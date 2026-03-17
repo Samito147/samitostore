@@ -10,6 +10,7 @@
   - preparar hooks para progresso real de vídeo
   - bloquear o restante da página até 60 segundos da VSL principal
   - implementar Micro Conversão Progressiva com segurança
+  - exibir toasts sociais elegantes desde o início da página
 
   EVENTOS RASTREADOS:
   - PageView
@@ -108,6 +109,21 @@ const MICRO_CONVERSAO_CONFIG = {
   currency: "BRL"
 };
 
+/* ---------------------------------------------------------
+   CONFIGURAÇÕES DOS TOASTS SOCIAIS
+   Exibição imediata, sem depender de vídeo
+--------------------------------------------------------- */
+const TOASTS_SOCIAIS_CONFIG = {
+  habilitado: true,
+  maxVisiveis: 2,
+  tempoVisivelMs: 4600,
+  primeiroDelayMinMs: 600,
+  primeiroDelayMaxMs: 1800,
+  intervaloMinMs: 5200,
+  intervaloMaxMs: 9800,
+  chancePorCiclo: 0.88
+};
+
 /* =========================================================
    ESTADO GLOBAL
    Guarda dados úteis para evitar eventos duplicados
@@ -146,6 +162,496 @@ const estadoTracking = {
     ultimoCTA: ""
   }
 };
+
+/* =========================================================
+   MÓDULO: TOASTS SOCIAIS
+   Visual elegante, tecnológico e suave
+========================================================= */
+const ToastsSociais = {
+  cssInjetado: false,
+  root: null,
+  timerId: null,
+  ativos: 0,
+
+  nomes: [
+    "Camila",
+    "Juliana",
+    "Fernanda",
+    "Patrícia",
+    "Renata",
+    "Aline",
+    "Marina",
+    "Bianca",
+    "Vanessa",
+    "Priscila",
+    "Carla",
+    "Amanda",
+    "Tatiane",
+    "Larissa",
+    "Beatriz",
+    "Gabriela",
+    "Natália",
+    "Paula",
+    "Luciana",
+    "Débora"
+  ],
+
+  templates: [
+    {
+      icon: "◉",
+      title: "Nova aluna",
+      build() {
+        return `${sortearItem(ToastsSociais.nomes)} começou agora na Máquina de Vendas Online 3.0`;
+      }
+    },
+    {
+      icon: "↗",
+      title: "Compra confirmada",
+      build() {
+        return `${sortearItem(ToastsSociais.nomes)} garantiu o acesso completo hoje`;
+      }
+    },
+    {
+      icon: "◎",
+      title: "Movimento ao vivo",
+      build() {
+        return `${numeroAleatorio(18, 63)} pessoas estão vendo esta página agora`;
+      }
+    },
+    {
+      icon: "▣",
+      title: "Interesse real",
+      build() {
+        return `${sortearItem(ToastsSociais.nomes)} clicou para conhecer a oferta completa`;
+      }
+    },
+    {
+      icon: "✦",
+      title: "Ação recente",
+      build() {
+        return `${sortearItem(ToastsSociais.nomes)} entrou para aprender vendas online`;
+      }
+    },
+    {
+      icon: "⌁",
+      title: "Engajamento",
+      build() {
+        return `${sortearItem(ToastsSociais.nomes)} salvou esta página para continuar depois`;
+      }
+    }
+  ],
+
+  injetarCSS() {
+    if (ToastsSociais.cssInjetado) {
+      return;
+    }
+
+    ToastsSociais.cssInjetado = true;
+
+    const css = `
+.toast-tech-stack{
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  width: min(370px, calc(100vw - 24px));
+  pointer-events: none;
+}
+
+.toast-tech-item{
+  position: relative;
+  width: 100%;
+  min-height: 76px;
+  overflow: hidden;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,.16);
+  background:
+    linear-gradient(135deg, rgba(18, 28, 48, .84) 0%, rgba(9, 17, 31, .78) 100%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow:
+    0 18px 44px rgba(0, 0, 0, .24),
+    inset 0 1px 0 rgba(255,255,255,.06);
+  color: #eef4ff;
+  opacity: 0;
+  transform: translateY(18px) scale(.985);
+  transition: opacity 260ms ease, transform 260ms ease;
+}
+
+.toast-tech-item.is-visible{
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.toast-tech-item.is-leaving{
+  opacity: 0;
+  transform: translateY(10px) scale(.985);
+}
+
+.toast-tech-item::before{
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at top right, rgba(88, 166, 255, .16), transparent 42%),
+    radial-gradient(circle at bottom left, rgba(0, 255, 200, .08), transparent 35%);
+  pointer-events: none;
+}
+
+.toast-tech-item__glow{
+  position: absolute;
+  top: -20px;
+  right: -10px;
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(86, 162, 255, .18) 0%, rgba(86, 162, 255, 0) 72%);
+  pointer-events: none;
+}
+
+.toast-tech-item__bgicon{
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 54px;
+  line-height: 1;
+  font-weight: 800;
+  color: rgba(130, 184, 255, .08);
+  user-select: none;
+  pointer-events: none;
+}
+
+.toast-tech-item__row{
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+}
+
+.toast-tech-item__badge{
+  flex: 0 0 40px;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 13px;
+  border: 1px solid rgba(120, 181, 255, .22);
+  background:
+    linear-gradient(180deg, rgba(75, 140, 255, .18), rgba(75, 140, 255, .08));
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.08),
+    0 8px 20px rgba(27, 92, 195, .20);
+  color: #9fd0ff;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.toast-tech-item__content{
+  min-width: 0;
+  flex: 1;
+}
+
+.toast-tech-item__title{
+  margin: 0 0 4px 0;
+  color: rgba(171, 207, 255, .78);
+  font-size: 11.5px;
+  line-height: 1.15;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  font-weight: 800;
+}
+
+.toast-tech-item__text{
+  margin: 0;
+  color: rgba(240, 247, 255, .96);
+  font-size: 14px;
+  line-height: 1.45;
+  font-weight: 600;
+}
+
+.toast-tech-item__progress{
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, rgba(90, 184, 255, .92), rgba(0, 255, 198, .34));
+  transform-origin: left center;
+  animation: toastTechProgress linear forwards;
+}
+
+@keyframes toastTechProgress{
+  from{ transform: scaleX(1); }
+  to{ transform: scaleX(0); }
+}
+
+@media (max-width: 640px){
+  .toast-tech-stack{
+    right: 12px;
+    left: 12px;
+    bottom: 12px;
+    width: auto;
+    align-items: stretch;
+  }
+
+  .toast-tech-item{
+    min-height: 72px;
+    border-radius: 16px;
+  }
+
+  .toast-tech-item__row{
+    padding: 13px 14px;
+  }
+
+  .toast-tech-item__badge{
+    width: 36px;
+    height: 36px;
+    flex-basis: 36px;
+    border-radius: 12px;
+    font-size: 15px;
+  }
+
+  .toast-tech-item__bgicon{
+    right: 10px;
+    font-size: 46px;
+  }
+
+  .toast-tech-item__text{
+    font-size: 13.2px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce){
+  .toast-tech-item,
+  .toast-tech-item__progress{
+    transition: none !important;
+    animation: none !important;
+  }
+}
+    `.trim();
+
+    const style = document.createElement("style");
+    style.setAttribute("data-toast-tech", "ativo");
+    style.textContent = css;
+    document.head.appendChild(style);
+  },
+
+  garantirRoot() {
+    if (ToastsSociais.root) {
+      return ToastsSociais.root;
+    }
+
+    ToastsSociais.injetarCSS();
+
+    const root = document.createElement("div");
+    root.className = "toast-tech-stack";
+    root.setAttribute("aria-live", "polite");
+    root.setAttribute("aria-atomic", "false");
+
+    document.body.appendChild(root);
+    ToastsSociais.root = root;
+
+    return root;
+  },
+
+  podeMostrar() {
+    if (!TOASTS_SOCIAIS_CONFIG.habilitado) {
+      return false;
+    }
+
+    if (document.hidden) {
+      return false;
+    }
+
+    if (ToastsSociais.ativos >= TOASTS_SOCIAIS_CONFIG.maxVisiveis) {
+      return false;
+    }
+
+    return true;
+  },
+
+  construirDadosToast() {
+    const template = sortearItem(ToastsSociais.templates);
+
+    if (!template) {
+      return null;
+    }
+
+    return {
+      icon: template.icon || "•",
+      title: template.title || "Atualização",
+      text: template.build()
+    };
+  },
+
+  mostrarToast(dados) {
+    if (!dados || !ToastsSociais.podeMostrar()) {
+      return;
+    }
+
+    const root = ToastsSociais.garantirRoot();
+    const toast = document.createElement("div");
+    toast.className = "toast-tech-item";
+    toast.setAttribute("role", "status");
+
+    toast.innerHTML = `
+<div class="toast-tech-item__glow" aria-hidden="true"></div>
+<div class="toast-tech-item__bgicon" aria-hidden="true">${dados.icon}</div>
+<div class="toast-tech-item__row">
+  <div class="toast-tech-item__badge" aria-hidden="true">${dados.icon}</div>
+  <div class="toast-tech-item__content">
+    <p class="toast-tech-item__title">${dados.title}</p>
+    <p class="toast-tech-item__text">${dados.text}</p>
+  </div>
+</div>
+<div class="toast-tech-item__progress" style="animation-duration:${TOASTS_SOCIAIS_CONFIG.tempoVisivelMs}ms"></div>
+    `.trim();
+
+    root.appendChild(toast);
+    ToastsSociais.ativos += 1;
+
+    requestAnimationFrame(() => {
+      toast.classList.add("is-visible");
+    });
+
+    window.setTimeout(() => {
+      toast.classList.add("is-leaving");
+
+      window.setTimeout(() => {
+        try {
+          toast.remove();
+        } catch (erro) {
+          /* Ignora remoção */
+        }
+
+        ToastsSociais.ativos = Math.max(0, ToastsSociais.ativos - 1);
+      }, 320);
+    }, TOASTS_SOCIAIS_CONFIG.tempoVisivelMs);
+  },
+
+  talvezMostrar() {
+    if (!ToastsSociais.podeMostrar()) {
+      return;
+    }
+
+    if (Math.random() > TOASTS_SOCIAIS_CONFIG.chancePorCiclo) {
+      return;
+    }
+
+    const dados = ToastsSociais.construirDadosToast();
+
+    if (!dados) {
+      return;
+    }
+
+    ToastsSociais.mostrarToast(dados);
+  },
+
+  proximoDelay(primeiro = false) {
+    if (primeiro) {
+      return numeroAleatorio(
+        TOASTS_SOCIAIS_CONFIG.primeiroDelayMinMs,
+        TOASTS_SOCIAIS_CONFIG.primeiroDelayMaxMs
+      );
+    }
+
+    return numeroAleatorio(
+      TOASTS_SOCIAIS_CONFIG.intervaloMinMs,
+      TOASTS_SOCIAIS_CONFIG.intervaloMaxMs
+    );
+  },
+
+  agendarProximo(primeiro = false) {
+    if (ToastsSociais.timerId) {
+      clearTimeout(ToastsSociais.timerId);
+      ToastsSociais.timerId = null;
+    }
+
+    const delay = ToastsSociais.proximoDelay(primeiro);
+
+    ToastsSociais.timerId = window.setTimeout(() => {
+      ToastsSociais.talvezMostrar();
+      ToastsSociais.agendarProximo(false);
+    }, delay);
+  },
+
+  bindVisibility() {
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) {
+        if (ToastsSociais.timerId) {
+          clearTimeout(ToastsSociais.timerId);
+          ToastsSociais.timerId = null;
+        }
+        return;
+      }
+
+      if (!ToastsSociais.timerId) {
+        ToastsSociais.agendarProximo(false);
+      }
+    });
+  },
+
+  iniciar() {
+    if (!TOASTS_SOCIAIS_CONFIG.habilitado) {
+      return;
+    }
+
+    ToastsSociais.garantirRoot();
+    ToastsSociais.bindVisibility();
+    ToastsSociais.agendarProximo(true);
+  }
+};
+
+/* =========================================================
+   UTILITÁRIOS DOS TOASTS
+   Funções auxiliares isoladas para não poluir a lógica
+========================================================= */
+function numeroAleatorio(min, max) {
+  const minimo = Math.ceil(Number(min) || 0);
+  const maximo = Math.floor(Number(max) || 0);
+
+  if (maximo <= minimo) {
+    return minimo;
+  }
+
+  return Math.floor(Math.random() * (maximo - minimo + 1)) + minimo;
+}
+
+function sortearItem(lista) {
+  if (!Array.isArray(lista) || !lista.length) {
+    return null;
+  }
+
+  return lista[numeroAleatorio(0, lista.length - 1)];
+}
+
+/* =========================================================
+   FUNÇÃO: ocultarCTAsDeCheckoutExcetoUltimo
+   Oculta todos os botões de checkout (.cta-link),
+   preservando apenas o último
+========================================================= */
+function ocultarCTAsDeCheckoutExcetoUltimo() {
+  const ctas = Array.from(document.querySelectorAll(".cta-link"));
+
+  if (!ctas.length) {
+    return;
+  }
+
+  ctas.forEach((cta, indice) => {
+    const ehUltimo = indice === ctas.length - 1;
+
+    if (!ehUltimo) {
+      cta.style.display = "none";
+    }
+  });
+}
 
 /* =========================================================
    FUNÇÃO: capturarElementosBloqueadosInicialmente
@@ -1184,11 +1690,25 @@ window.trackVideoPlayExternally = trackVideoPlayExternally;
 window.trackVideoCompleteExternally = trackVideoCompleteExternally;
 
 /* =========================================================
+   FUNÇÃO: inicializarToastsSociais
+   Inicia a prova social visual desde o começo da página
+========================================================= */
+function inicializarToastsSociais() {
+  ToastsSociais.iniciar();
+}
+
+/* =========================================================
    FUNÇÃO: inicializarTudo
    Orquestra todas as funcionalidades do script
 ========================================================= */
 function inicializarTudo() {
   estadoTracking.contextoPagina = obterContextoPagina();
+
+  /* -------------------------------------------------------
+     ETAPA 0
+     Oculta todos os botões de checkout, exceto o último
+  ------------------------------------------------------- */
+  ocultarCTAsDeCheckoutExcetoUltimo();
 
   /* -------------------------------------------------------
      ETAPA 1
@@ -1209,6 +1729,7 @@ function inicializarTudo() {
   inicializarVSLTracking();
   inicializarProvasSociaisTracking();
   inicializarProvasImagemTracking();
+  inicializarToastsSociais();
 
   /* -------------------------------------------------------
      ETAPA 2
